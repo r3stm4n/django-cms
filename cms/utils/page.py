@@ -141,7 +141,10 @@ def get_page_from_request(request, use_path=None, clean_path=None):
 
     The page slug can then be resolved to a Page model object
     """
-    from cms.utils.page_permissions import user_can_view_page_draft
+    from cms.utils.page_permissions import (
+        user_can_view_page_draft, 
+        user_can_change_page
+    )
 
     if hasattr(request, '_current_page_cache'):
         # The following is set by CurrentPageMiddleware
@@ -167,7 +170,9 @@ def get_page_from_request(request, use_path=None, clean_path=None):
     site = get_current_site()
     page = get_page_from_path(site, path, preview, draft)
 
-    if draft and page and not user_can_view_page_draft(request.user, page):
+    if draft and page \
+        and not user_can_view_page_draft(request.user, page) \
+        and user_can_change_page(request.user, page=page):
         page = get_page_from_path(site, path, preview, draft=False)
 
     # For public pages, check if any parent is hidden due to published dates
